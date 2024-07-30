@@ -1,0 +1,662 @@
+{
+  "schema_version": 18,
+  "standard_lib_version": 54,
+  "action_runtime_version": 11,
+  "name": "Testing POC CERTv3",
+  "description": "",
+  "guid": "a527ae239259598a168c2b7287833b5b",
+  "slug": "testing_poc_certv3",
+  "agents": [
+    {
+      "type": "Agents::WebhookAgent",
+      "name": "Webhook",
+      "disabled": false,
+      "description": null,
+      "guid": "945eeb5b13cd3d19458b17b6c7c0f8fb",
+      "origin_story_identifier": "cloud:76f737c92eefc87903c35e43129583a5:971a1ffa58f81662b707572bc18d1a5e",
+      "options": {
+        "path": "27c1383fc648f7f92753be4d64d29c55",
+        "secret": "your_key_here",
+        "verbs": "get,post",
+        "response": "Ok",
+        "local": {
+          "caseid": "~192568"
+        }
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Search for IP Address in Abuse IPDB",
+      "disabled": false,
+      "description": null,
+      "guid": "d168e043dd100afe935a5f7efc5f5642",
+      "origin_story_identifier": "cloud:d521f765a49c72507257a2620612ee96:a602c4f494ae4308073e3b9aa2cac5e2",
+      "options": {
+        "url": "https://api.abuseipdb.com/api/v2/check",
+        "content_type": "application_json",
+        "method": "get",
+        "payload": {
+          "maxAgeInDays": "90",
+          "ipAddress": "<<explode_json_array.individual_item.data>>",
+          "verbose": "true"
+        },
+        "headers": {
+          "key": "your_key_here"
+        }
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "chatgpt_tell_me_about_some_ip",
+      "disabled": false,
+      "description": "Uses the conversational chat model from OpenAI\n\nAPI Documentation: https://platform.openai.com/docs/api-reference/chat/create",
+      "guid": "91cbb4296cc105406facb64d80ded1c9",
+      "origin_story_identifier": "cloud:76f737c92eefc87903c35e43129583a5:971a1ffa58f81662b707572bc18d1a5e",
+      "options": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "method": "post",
+        "content_type": "application_json",
+        "payload": {
+          "model": "<<INPUT.model>>",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are a helpful security assistant."
+            },
+            {
+              "role": "user",
+              "content": "Me diga se o endereço ip com base nas informações abaixo de um serviço de abuso, parece um endereço seguro <<abuseip_raw_transformation_to_openai.message>>"
+            }
+          ]
+        },
+        "headers": {
+          "Authorization": "Bearer <<INPUT.openai_credential>>"
+        },
+        "timeout": "180"
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": "8798680227e1eb26c0b082ab49a7c88061987cdb81a78061b9652a500d1e0449",
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "TheHive - Comment on a Case",
+      "disabled": false,
+      "description": "",
+      "guid": "057aa298a359f4016932bb1449664953",
+      "origin_story_identifier": "cloud:76f737c92eefc87903c35e43129583a5:93ede2eeb7330c3a8434ff60d4a1bb17",
+      "options": {
+        "url": "your_hive_url",
+        "content_type": "application_json",
+        "method": "post",
+        "headers": {
+          "Authorization": "Bearer your_key_here"
+        },
+        "payload": {
+          "message": "ChatGPT <<chatgpt_message.individual_item.message.content>>"
+        }
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": "15ae730514bbd6b304d77920e75a07d2dd0753a08ae1f8b7a1bdec6eabbce6aa",
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::EventTransformationAgent",
+      "name": "AbuseIP Raw transformation to OpenAi",
+      "disabled": false,
+      "description": null,
+      "guid": "09c1723e3eddc14ae91f5e6e222990ff",
+      "origin_story_identifier": "cloud:76f737c92eefc87903c35e43129583a5:93ede2eeb7330c3a8434ff60d4a1bb17",
+      "options": {
+        "mode": "message_only",
+        "loop": false,
+        "payload": {
+          "message": "IpAddress:<<search_for_ip_address_in_abuse_ipdb.body.data.ipAddress>>, Country:<<search_for_ip_address_in_abuse_ipdb.body.data.countryName>>, ISP: <<search_for_ip_address_in_abuse_ipdb.body.data.isp>>,Is Allow Listed?:<<search_for_ip_address_in_abuse_ipdb.body.data.isWhitelisted>>,Is from Tor?:<<search_for_ip_address_in_abuse_ipdb.body.data.isTor>>,Reports Available:<<search_for_ip_address_in_abuse_ipdb.body.data.totalReports>>, Abuse_Confidence_Score: <<search_for_ip_address_in_abuse_ipdb.body.data.abuseConfidenceScore>>"
+        }
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Create a Task associated with a Case",
+      "disabled": false,
+      "description": "Create a Task associated with an existing case in the Hive Incident Response Platform\n\nDescription: refer to TheHive's Markdown reference below\n- https://docs.strangebee.com/thehive/how-to/markdown/\n\nstatus: Waiting, InProgress, Completed, Cancelled",
+      "guid": "b673f62404f32092d4358f8a26693c4c",
+      "origin_story_identifier": "cloud:76f737c92eefc87903c35e43129583a5:93ede2eeb7330c3a8434ff60d4a1bb17",
+      "options": {
+        "url": "your_hive_url",
+        "content_type": "json",
+        "method": "post",
+        "payload": {
+          "title": "Dealing with a suspicious IP by Jarvis_GPT",
+          "description": "<<chatgpt_message_task.individual_item.message.content>>",
+          "status": "Waiting"
+        },
+        "headers": {
+          "Authorization": "Bearer your_key_here"
+        }
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": "d748814665ef519747d61ea8fe4d4a7424f2c41db07fdf907c5966b7494bc135",
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Get playbook malicious ip with gpt",
+      "disabled": false,
+      "description": "Uses the conversational chat model from OpenAI\n\nAPI Documentation: https://platform.openai.com/docs/api-reference/chat/create",
+      "guid": "0d00c2e4b61b6df763270ae24fda5921",
+      "origin_story_identifier": "cloud:76f737c92eefc87903c35e43129583a5:971a1ffa58f81662b707572bc18d1a5e",
+      "options": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "method": "post",
+        "content_type": "application_json",
+        "payload": {
+          "model": "<<INPUT.model>>",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are a helpful security assistant."
+            },
+            {
+              "role": "user",
+              "content": "Me diga em bullets o que devo fazer como um analista de resposta à incidentes de uma grande organização ao lidar com este ip malicioso dentro da minha estrutura"
+            }
+          ]
+        },
+        "headers": {
+          "Authorization": "Bearer <<INPUT.openai_credential>>"
+        },
+        "timeout": "180"
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": "8798680227e1eb26c0b082ab49a7c88061987cdb81a78061b9652a500d1e0449",
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Get List of Observables per case",
+      "disabled": false,
+      "description": "Retrieve a list of cases in the Hive Incident Response Platform\n\nhttps://docs.strangebee.com/thehive/api-docs/#operation/Query%20API",
+      "guid": "e9c1a77fbc6e294422631979b9ecfd87",
+      "origin_story_identifier": "cloud:76f737c92eefc87903c35e43129583a5:6dac9733b0cb60b9a95c75ea422b8005",
+      "options": {
+        "url": "http://your_thehive_url",
+        "content_type": "application_json",
+        "method": "post",
+        "payload": {
+          "query": [
+            {
+              "_name": "getCase",
+              "idOrName": "~192568"
+            },
+            {
+              "_name": "observables"
+            },
+            {
+              "_name": "page",
+              "from": 0,
+              "to": 15
+            }
+          ]
+        },
+        "headers": {
+          "Authorization": "Bearer your_key_here"
+        }
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": "8f7da6553a6a631a3c045bbca47c47d15bd54a907587c031dd1ab8070ac1b6ff",
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::EventTransformationAgent",
+      "name": "Explode JSON Array",
+      "disabled": false,
+      "description": null,
+      "guid": "eacfbd8183375017f917d3c86c379130",
+      "origin_story_identifier": "cloud:76f737c92eefc87903c35e43129583a5:6dac9733b0cb60b9a95c75ea422b8005",
+      "options": {
+        "mode": "explode",
+        "path": "=get_list_of_observables_per_case.body",
+        "to": "individual_item",
+        "limit": "500"
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::EventTransformationAgent",
+      "name": "ChatGPT Message",
+      "disabled": false,
+      "description": null,
+      "guid": "484f1befb33c8624bd61148c84a457ac",
+      "origin_story_identifier": "cloud:9c816c88a56940a9eb5843b8b5081fab:93f2d05f945cbd34b41869ee0f38fc38",
+      "options": {
+        "mode": "explode",
+        "path": "=chatgpt_tell_me_about_some_ip.body.choices",
+        "to": "individual_item",
+        "limit": "3"
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::EventTransformationAgent",
+      "name": "ChatGPT Message Task",
+      "disabled": false,
+      "description": null,
+      "guid": "1c30e93f217e4b0aa481f33500e026ac",
+      "origin_story_identifier": "cloud:9c816c88a56940a9eb5843b8b5081fab:93f2d05f945cbd34b41869ee0f38fc38",
+      "options": {
+        "mode": "explode",
+        "path": "=get_playbook_malicious_ip_with_gpt.body.choices",
+        "to": "individual_item",
+        "limit": "1"
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::EventTransformationAgent",
+      "name": "Event Transform Action",
+      "disabled": false,
+      "description": null,
+      "guid": "d037e781c97e36e06f7181bed0b5e403",
+      "origin_story_identifier": "cloud:9c816c88a56940a9eb5843b8b5081fab:93f2d05f945cbd34b41869ee0f38fc38",
+      "options": {
+        "mode": "throttle",
+        "interval": "minute",
+        "capacity": "1",
+        "events_per_run": 1
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null
+    },
+    {
+      "type": "Agents::EventTransformationAgent",
+      "name": "Throttling",
+      "disabled": false,
+      "description": null,
+      "guid": "2ba4b00096445521abc5698b5a35d948",
+      "origin_story_identifier": "cloud:9c816c88a56940a9eb5843b8b5081fab:93f2d05f945cbd34b41869ee0f38fc38",
+      "options": {
+        "mode": "throttle",
+        "interval": "hour",
+        "capacity": "1",
+        "events_per_run": 1
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null
+    }
+  ],
+  "diagram_notes": [],
+  "links": [
+    {
+      "source": 0,
+      "receiver": 11
+    },
+    {
+      "source": 1,
+      "receiver": 4
+    },
+    {
+      "source": 2,
+      "receiver": 9
+    },
+    {
+      "source": 2,
+      "receiver": 12
+    },
+    {
+      "source": 4,
+      "receiver": 2
+    },
+    {
+      "source": 6,
+      "receiver": 10
+    },
+    {
+      "source": 7,
+      "receiver": 8
+    },
+    {
+      "source": 8,
+      "receiver": 1
+    },
+    {
+      "source": 9,
+      "receiver": 3
+    },
+    {
+      "source": 10,
+      "receiver": 5
+    },
+    {
+      "source": 11,
+      "receiver": 7
+    },
+    {
+      "source": 12,
+      "receiver": 6
+    }
+  ],
+  "diagram_layout": "{\"945eeb5b13cd3d19458b17b6c7c0f8fb\":[1050,-300],\"d168e043dd100afe935a5f7efc5f5642\":[1050,135],\"91cbb4296cc105406facb64d80ded1c9\":[1050,405],\"057aa298a359f4016932bb1449664953\":[1050,660],\"09c1723e3eddc14ae91f5e6e222990ff\":[1050,255],\"b673f62404f32092d4358f8a26693c4c\":[750,675],\"0d00c2e4b61b6df763270ae24fda5921\":[750,495],\"e9c1a77fbc6e294422631979b9ecfd87\":[1050,-105],\"eacfbd8183375017f917d3c86c379130\":[1050,15],\"484f1befb33c8624bd61148c84a457ac\":[1050,540],\"1c30e93f217e4b0aa481f33500e026ac\":[750,585],\"d037e781c97e36e06f7181bed0b5e403\":[1050,-195],\"2ba4b00096445521abc5698b5a35d948\":[750,420]}",
+  "send_to_story_enabled": false,
+  "entry_agent_guid": null,
+  "exit_agent_guids": [],
+  "exit_agent_guid": null,
+  "api_entry_action_guids": [],
+  "api_exit_action_guids": [],
+  "keep_events_for": 86400,
+  "reporting_status": true,
+  "send_to_story_access": null,
+  "story_library_metadata": {
+    "tags": [
+      "test"
+    ],
+    "icons": null,
+    "visibility": null
+  },
+  "parent_only_send_to_story": false,
+  "monitor_failures": false,
+  "send_to_stories": [],
+  "form": null,
+  "synchronous_webhooks_enabled": false,
+  "forms": [],
+  "pages": [],
+  "tags": [
+    {
+      "name": "test"
+    }
+  ],
+  "time_saved_unit": "minutes",
+  "time_saved_value": 0,
+  "origin_story_identifier": "cloud:76f737c92eefc87903c35e43129583a5:93ede2eeb7330c3a8434ff60d4a1bb17",
+  "integration_product": null,
+  "integration_vendor": null,
+  "exported_at": "2024-07-30T13:49:13Z",
+  "icon": ":adaptive_shield:",
+  "integrations": [
+    {
+      "action_inputs": [
+        {
+          "name": "OpenAI Credential",
+          "description": "",
+          "required": true,
+          "type": "CREDENTIAL",
+          "ranking": 1610612736,
+          "value": "\"=CREDENTIAL.openai\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": false,
+          "sub_type": "HTML",
+          "multi_select_enabled": false
+        },
+        {
+          "name": "Model",
+          "description": "",
+          "required": false,
+          "type": "TEXT",
+          "ranking": 2139095040,
+          "value": "\"gpt-3.5-turbo-0125\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": false,
+          "sub_type": "HTML",
+          "multi_select_enabled": false
+        },
+        {
+          "name": "Prompt",
+          "description": "",
+          "required": false,
+          "type": "TEXT",
+          "ranking": 2143289344,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false
+        }
+      ],
+      "action_guid": "91cbb4296cc105406facb64d80ded1c9",
+      "product": "OpenAI"
+    },
+    {
+      "action_inputs": [
+        {
+          "name": "OpenAI Credential",
+          "description": "",
+          "required": true,
+          "type": "CREDENTIAL",
+          "ranking": 0,
+          "value": "\"=CREDENTIAL.openai\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": false,
+          "sub_type": "HTML",
+          "multi_select_enabled": false
+        },
+        {
+          "name": "Model",
+          "description": "",
+          "required": false,
+          "type": "TEXT",
+          "ranking": 1073741824,
+          "value": "\"gpt-3.5-turbo-0125\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": false,
+          "sub_type": "HTML",
+          "multi_select_enabled": false
+        },
+        {
+          "name": "Prompt",
+          "description": "",
+          "required": false,
+          "type": "TEXT",
+          "ranking": 1610612736,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false
+        }
+      ],
+      "action_guid": "0d00c2e4b61b6df763270ae24fda5921",
+      "product": "OpenAI"
+    }
+  ]
+}
